@@ -1,6 +1,6 @@
 # SociBubble-core
 
-Early, experimental interest-based matching engine. Core concepts are original; implementation is AI-assisted.
+Early, experimental interest-based matching engine. Core concepts are original; implementation of this entire project is AI-assisted.
 
 ## Conceptual Overview
 
