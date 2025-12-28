@@ -1,3 +1,10 @@
+⚠️ Mirror repository
+
+This is a read-only mirror for visibility.
+
+Canonical source:
+https://codeberg.org/socibubble/socibubble-core
+
 # SociBubble-core
 
 Early, experimental interest-based matching engine. Core concepts are original; implementation of this entire project is AI-assisted.
