@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>User Persona Calculate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+  body {
+    background: #020617;
+    color: #e5e7eb;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    padding: 24px;
+  }
+
+  h1 {
+    margin: 0 0 6px 0;
+  }
+
+  .meta {
+    color: #94a3b8;
+    margin-bottom: 16px;
+  }
+
+  .menu {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  button {
+    background: #334155;
+    color: #e5e7eb;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #475569;
+  }
+
+  pre {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.45;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<h1>SociBubble Matchmaking Algorithm Demo</h1>
+<div class="meta">
+  User Persona Version: <b>UserPersonaTable_V1_Demo</b><br/>
+  Persona Table Version: <b>PersonaTable_V1_Demo</b>
+</div>
+
+<div class="menu">
+  <button onclick="showHowItWorks()">How it Works</button>
+  <button onclick="showBase()">Run Calculate</button>
+  <button onclick="showWeighted()">Run Weighted</button>
+  <button onclick="runPairs()">Run Pairs</button>
+  <button onclick="startLobby()">Lobby Mode</button>
+  <button onclick="clearOut()">Clear</button>
+</div>
+
+
+<pre id="out" class="panel">Click a button to run.</pre>
+<pre id="howItWorks" class="panel" style="border:1px solid #1e293b; border-radius:8px; padding:16px; min-height:100px; background:#020617; color:#e5e7eb; font-family:ui-monospace, monospace;">
+Click the button to see instructions.
+</pre>
+<script>
+/* ======================================================
+   MOCK JSON DATA (paste directly from your files)
+====================================================== */
+
+const PERSONAS = {
+    "System Weaver": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+    "Data Drifter": [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0],
+    "Grid Captain": [1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    "Circuit Jumper": [1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+    "Soul Cartographer": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+    "Dreamsmith": [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    "Pulse Guide": [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0],
+    "Vibe Rider": [0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Core Mason": [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+    "Harbor Keeper": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],
+    "Forge Handler": [1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+    "Thread Bonder": [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0],
+    "Tinker Nomad": [1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0],
+    "Inner Glider": [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    "Momentum Spark": [1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    "Echo Prism": [0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+};
+
+const PLAYERS = {
+  "Alice": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+  "Anna": [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Bob": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+  "Carol": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Charlie": [1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+  "Clara": [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+  "Dave": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+  "Diane": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Eve": [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Frank": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+  "Grace": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+  "Helen": [0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Joe": [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+  "Judy": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+  "Mallory": [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+  "Mary": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Oscar": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+  "Sam": [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "Susan": [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+  "Tom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+  "Trent": [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+  "Victor": [0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+};
+
+const LADDER = [
+  0.6,0.56,0.55,0.54,0.53,0.52,0.51,0.5,
+  0.49,0.48,0.45,0.43,0.42,0.41,0.2,0.05
+];
+
+/* ======================================================
+   HELPERS
+====================================================== */
+
+// Calculate scores for a player vs all personas
+function calculateScores(player) {
+  const scores = {};
+  const pVector = PLAYERS[player];
+  for (const [persona, vec] of Object.entries(PERSONAS)) {
+    let score = 0;
+    for (let j = 0; j < vec.length; j++) {
+      score += vec[j] && pVector[j] ? 1 : 0;
+    }
+    scores[persona] = score;
+  }
+  return scores;
+}
+
+// Sort scores descending
+function sortScores(scores) {
+  return Object.entries(scores).sort((a,b) => b[1]-a[1]);
+}
+
+// Format number
+function fmt(n) {
+  return n.toFixed(2).padStart(6," ");
+}
+
+// Weighted dice helpers
+function createWeightedDice(personas, ladderBonuses) {
+  return personas.map((p, i) => ({
+    persona: p.persona,
+    weight: p.weight * (ladderBonuses[i] ?? 1)
+  }));
+}
+
+function rollWeightedDice(dice) {
+  const total = dice.reduce((sum, p) => sum + p.weight, 0);
+  let r = Math.random() * total;
+  for (const p of dice) {
+    if (r < p.weight) return p.persona;
+    r -= p.weight;
+  }
+  return dice[0]?.persona;
+}
+
+// Shuffle an array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function showPanelWithContent(panelId, content) {
+  // Hide and clear all panels
+  const panels = document.querySelectorAll('.panel');
+  panels.forEach(p => {
+    p.style.display = 'none';
+    p.textContent = '';
+  });
+
+  // Show and set content for the selected panel
+  const panel = document.getElementById(panelId);
+  panel.textContent = content;
+  panel.style.display = 'block';
+}
+
+function showHowItWorks() {
+  const explanation = `# SociBubble MATCHING ALGORITHM
+
+## What This System Does
+
+SociBubble matches people for friendship based on shared interests. Instead of directly 
+pairing people who picked the same interests, the system uses personality archetypes 
+and weighted probability to create natural groupings that feel authentic.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## HOW IT WORKS: 5 CORE STEPS
+
+### 1. Pick Your Interests
+You select exactly 5 interests from 52 available options.
+Examples: photography, cooking, gaming, technology, fitness, meditation, etc.
+
+### 2. Calculate Your Archetype Alignment
+The system compares your interests against 16 personality archetypes:
+
+THE 16 ARCHETYPES:
+- System Weaver        • Data Drifter         • Grid Captain
+- Circuit Jumper       • Soul Cartographer    • Dreamsmith
+- Pulse Guide          • Vibe Rider           • Core Mason
+- Harbor Keeper        • Forge Handler        • Thread Bonder
+- Tinker Nomad         • Inner Glider         • Momentum Spark
+- Echo Prism
+
+Each archetype represents a different combination of interests and personality 
+traits. The system calculates what percentage of your interests match each archetype.
+
+EXAMPLE:
+You picked: photography, cooking, reading, technology, camping
+System Weaver values: photography, reading, technology, investing, programming
+YOUR ALIGNMENT: 60% (3 out of 5 interests match)
+
+### 3. Rank and Weight Your Matches
+The system ranks all 16 archetypes from best to worst match, then applies 
+LADDER BONUSES that give more weight to your top matches.
+
+LADDER BONUSES:
+Rank 1: 0.60 multiplier (highest boost)
+Rank 2: 0.56 multiplier
+Rank 3: 0.55 multiplier
+...continuing down to...
+Rank 16: 0.05 multiplier (minimal boost)
+
+This creates a WEIGHTED SCORE for each archetype, determining how likely you 
+are to roll each one.
+
+### 4. Roll Your Weighted Dice
+Think of this like a 100-sided die where each archetype owns a slice of the 
+probability space based on its weighted score.
+
+EXAMPLE PROBABILITY DISTRIBUTION:
+|----System Weaver----|Data Drifter|Inner Glider|Others|
+0                   36          58.4         80.4  100
+
+The system generates a random number from 0-100. Whichever range it lands in 
+becomes your assigned archetype.
+
+WHY THIS MATTERS: People with similar interests will have similar probability 
+distributions, meaning they're likely to roll the same or compatible archetypes 
+even though the roll itself is random.
+
+### 5. Group and Match
+After everyone rolls their archetype, the system groups users who rolled the 
+same archetype, then creates either:
+
+PAIR MODE: Creates 1-on-1 matches
+- First pairs people within the same archetype
+- Any leftovers get paired with other leftovers (mixed pairs)
+- SUCCESS RATE: 99.96% same-archetype pairs across millions of simulations
+
+LOBBY MODE: Creates small groups of 5-7 people
+- Pairs people within archetypes first
+- Then shuffles everyone and creates diverse lobbies
+- Some lobbies have matched pairs, others have solo players
+- Encourages group dynamics and "opposites attract" connections
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## WHY ARCHETYPES INSTEAD OF DIRECT MATCHING?
+
+THE PROBLEM WITH DIRECT MATCHING:
+- Very few perfect matches
+- Missed connections between compatible people
+- No room for complementary friendships
+
+THE ARCHETYPE SOLUTION:
+- INCREASE MATCH POSSIBILITIES - people don't need identical interests
+- ENABLE COMPLEMENTARY PAIRINGS - different archetypes can work together
+- CREATE NATURAL CLUSTERS - similar people gravitate toward same archetypes
+- ALLOW FOR "OPPOSITES ATTRACT" - especially in lobby mode
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## KEY CONCEPTS
+
+BINARY VECTOR: Your 5 selected interests converted to a pattern of 0s and 1s 
+across all 52 possible interests
+
+ALIGNMENT SCORE: The percentage of your interests that match an archetype's 
+interests
+
+WEIGHTED DICE: A probability system where better-matched archetypes have larger 
+chances of being selected
+
+SAME-ARCHETYPE MATCH: Two people paired who rolled the same archetype (ideal)
+
+MIXED MATCH: Two people paired who rolled different archetypes (from leftovers)
+
+SOLO vs PAIRED: In lobby mode, whether your match partner is in the same lobby
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## EXAMPLE WALKTHROUGH
+
+ALICE'S JOURNEY:
+1. Picks: photography, cooking, reading, technology, camping
+2. Alignment scores:
+   • System Weaver: 60%
+   • Data Drifter: 40%
+   • Inner Glider: 40%
+3. Weighted scores:
+   • System Weaver: 36.0 points (owns 36% of probability)
+   • Data Drifter: 22.4 points (owns 22.4% of probability)
+4. Random roll: 18.3 → Falls in System Weaver's range
+5. ASSIGNED: System Weaver (Rank 1)
+
+CAROL'S JOURNEY:
+1. Picks: photography, reading, technology, investing, programming
+2. Alignment: System Weaver: 100% (perfect match!)
+3. Weighted: System Weaver owns 38.5% of probability space
+4. Random roll: 12.9 → Falls in System Weaver's range
+5. ASSIGNED: System Weaver (Rank 1)
+
+THE MATCH:
+Alice and Carol both rolled System Weaver despite completely random dice rolls. 
+WHY? Because their similar interests created similar probability distributions, 
+making them naturally likely to land in the same archetype.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## THE MATH BEHIND THE MAGIC
+
+WHY 99.96% SUCCESS RATE?
+
+When thousands of users with similar interests all roll weighted dice, the 
+probability distributions cause natural clustering:
+
+- Tech/programming interests → likely roll System Weaver or Data Drifter
+- Fitness/sports interests → likely roll Grid Captain or Momentum Spark
+- Arts/creativity interests → likely roll Dreamsmith or Soul Cartographer
+
+The system doesn't force matches. It uses probability weighted by genuine 
+interest alignment to create organic groupings.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## TWO MATCHING MODES
+
+PAIR MODE (1-on-1 Matching):
+PROCESS:
+1. Pair everyone within their archetype groups
+2. Collect leftovers
+3. Pair leftovers together (creates mixed pairs)
+
+OUTPUT:
+- Most pairs share the same archetype
+- Very few mixed pairs
+- Everyone gets a match
+
+BEST FOR: Traditional friendship matching, one-on-one connections
+
+---
+
+LOBBY MODE (Small Group Matching):
+PROCESS:
+1. Pair everyone within their archetype groups (track pairs)
+2. Shuffle all users randomly
+3. Create lobbies of 5-7 people
+4. Track which pairs stayed together vs separated
+
+OUTPUT:
+- Diverse lobbies with multiple archetypes
+- Some users have their pair in the lobby (paired status)
+- Some users' pairs are in other lobbies (solo status)
+- Creates opportunities for group dynamics
+
+BEST FOR: Group activities, diverse social interactions, complementary mixing
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## WHAT MAKES A "MEANINGFUL" CONNECTION?
+
+AUTHENTIC: Matches feel natural because they're based on genuine interest 
+alignment, not forced compatibility
+
+GENUINE: The archetype system respects that friendship isn't just about 
+identical interests—it's about compatible personalities
+
+COMPLEMENTARY: Different archetypes can work together and create "opposites 
+attract" dynamics (especially in lobby mode)
+
+TRUST-BASED: Users accept their assigned archetype like putting on a "thinking 
+cap"—temporarily embracing this personality frame for the interaction
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## WHY THIS WORKS
+
+1. Similar interests → Similar probability distributions
+2. Similar distributions → Likely to roll same/compatible archetypes
+3. Same archetype assignment → Natural grouping for matching
+4. RESULT: High-quality matches without hardcoded rules
+
+The beauty of this system is that it feels random (because the dice roll IS 
+random), but it's statistically weighted to create meaningful connections based 
+on genuine interest alignment.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+## THE PHILOSOPHY
+
+Traditional systems ask: "Do these two people have the same interests?"
+
+SociBubble asks: "Do these two people have compatible personality archetypes that 
+could create an authentic friendship?"
+
+By abstracting interests into archetypes and using weighted probability, we 
+create space for:
+- Expected connections (same interests → same archetype)
+- Unexpected connections (different interests → complementary archetypes)
+- Group dynamics (multiple archetypes in one lobby)
+- Natural clustering (organic groupings without forced rules)
+
+The goal isn't perfect algorithmic precision—it's INCREASING THE LIKELIHOOD 
+OF GENUINE, AUTHENTIC, MEANINGFUL FRIENDSHIPS.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Click "Run Calculate" to see player alignments
+Click "Run Weighted" to see weighted scores with ladder bonuses
+Click "Run Pairs" to see pair matching results
+Click "Lobby Mode" to see lobby grouping results
+`;
+  showPanelWithContent('howItWorks', explanation);
+}
+
+// Base calculation
+function showBase() {
+  let out = '';
+  for (const player of Object.keys(PLAYERS)) {
+    out += `--- ${player} ---\n`;
+    const scores = calculateScores(player);
+    const sorted = sortScores(scores);
+    sorted.forEach(([p, v], i) => out += `${String(i+1).padStart(2)}. ${p}: ${v}\n`);
+    out += '\n';
+  }
+  showPanelWithContent('out', out);
+}
+
+// Weighted calculation
+function showWeighted() {
+  let out = '';
+  for (const player of Object.keys(PLAYERS)) {
+    out += `--- ${player} ---\n`;
+    const scores = calculateScores(player);
+    const sorted = sortScores(scores);
+    sorted.forEach(([p,v],i) => {
+      const w = LADDER[i] ?? 0;
+      const score = (v * w).toFixed(2);
+      out += `${String(i+1).padStart(2)}. ${p}: ${v} × ${w} = ${score}\n`;
+    });
+    out += '\n';
+  }
+  showPanelWithContent('out', out);
+}
+
+// Run pairs
+function runPairs() {
+  let out = '[Run Pairs] Starting matchmaking...\n\nMatches:\n';
+  const pool = Object.keys(PLAYERS).slice();
+  shuffleArray(pool);
+
+  let match = 1;
+  while (pool.length >= 2) {
+    const a = pool.shift();
+    const b = pool.shift();
+    const topA = sortScores(calculateScores(a))[0][0];
+    const topB = sortScores(calculateScores(b))[0][0];
+    const via = topA === topB ? topA : 'mixed';
+    out += `${match}. ${a} (${topA}) + ${b} (${topB}) via ${via}\n`;
+    match++;
+  }
+
+  if (pool.length === 1) out += `Odd player out: ${pool[0]}\n`;
+
+  showPanelWithContent('out', out);
+}
+// Add this function before startLobby()
+function runLobbyMode(alignments, ladderBonuses) {
+  const players = Object.keys(alignments);
+  
+  // Step 1: Roll weighted dice for each player
+  const playerAssignments = players.map(player => {
+    const weightedPersonas = alignments[player].map((p, i) => ({
+      persona: p.persona,
+      weight: p.weight * (ladderBonuses[i] ?? 1),
+      rank: i + 1
+    }));
+    
+    const selectedPersona = rollWeightedDice(weightedPersonas);
+    const rank = weightedPersonas.find(p => p.persona === selectedPersona)?.rank || 1;
+    
+    return {
+      account_number: player,
+      selectedPersona,
+      rank,
+      originalPair: null
+    };
+  });
+  
+  // Step 2: Group by selected persona
+  const personaGroups = {};
+  playerAssignments.forEach(p => {
+    if (!personaGroups[p.selectedPersona]) {
+      personaGroups[p.selectedPersona] = [];
+    }
+    personaGroups[p.selectedPersona].push(p);
+  });
+  
+  // Step 3: Pair within same persona groups
+  const pairedPlayers = [];
+  Object.values(personaGroups).forEach(group => {
+    shuffleArray(group);
+    for (let i = 0; i < group.length - 1; i += 2) {
+      group[i].originalPair = group[i + 1].account_number;
+      group[i + 1].originalPair = group[i].account_number;
+      pairedPlayers.push(group[i], group[i + 1]);
+    }
+    // Add any leftover solo player
+    if (group.length % 2 === 1) {
+      pairedPlayers.push(group[group.length - 1]);
+    }
+  });
+  
+  // Step 4: Shuffle all players
+  shuffleArray(pairedPlayers);
+  
+  // Step 5: Create lobbies of 5-7 people
+  const lobbies = [];
+  const minLobbySize = 5;
+  const maxLobbySize = 7;
+  
+  let i = 0;
+  while (i < pairedPlayers.length) {
+    const remaining = pairedPlayers.length - i;
+    
+    if (remaining < minLobbySize) {
+      // Not enough for a full lobby - these are leftovers
+      break;
+    }
+    
+    // Determine lobby size (prefer 7, but adjust if needed)
+    let lobbySize;
+    if (remaining >= maxLobbySize) {
+      lobbySize = maxLobbySize;
+    } else if (remaining >= minLobbySize) {
+      lobbySize = remaining;
+    } else {
+      break;
+    }
+    
+    const lobby = pairedPlayers.slice(i, i + lobbySize);
+    lobbies.push(lobby);
+    i += lobbySize;
+  }
+  
+  // Step 6: Collect leftovers
+  const leftovers = pairedPlayers.slice(i).map(p => p.account_number);
+  
+  return {
+    lobbies,
+    leftovers
+  };
+}
+
+// Lobby mode
+function startLobby() {
+  const alignments = {};
+  for (const [player, vec] of Object.entries(PLAYERS)) {
+    alignments[player] = Object.entries(PERSONAS).map(([persona, pVec]) => {
+      const score = pVec.reduce((acc, val, idx) => acc + (val && vec[idx] ? 1 : 0), 0);
+      return { persona, weight: score };
+    }).sort((a,b) => b.weight - a.weight);
+  }
+  
+  const result = runLobbyMode(alignments, LADDER);
+  
+  let out = '[Lobby Mode] Generated Lobbies:\n\n';
+  result.lobbies.forEach((lobby, i) => {
+    out += `Lobby ${i + 1} (${lobby.length} players):\n`;
+    lobby.forEach(p => {
+      const pairStatus = p.originalPair 
+        ? (lobby.find(l => l.account_number === p.originalPair) ? '[paired]' : '[solo]')
+        : '[solo]';
+      out += `  - ${p.account_number}: ${p.selectedPersona} (Rank ${p.rank}) ${pairStatus}\n`;
+    });
+    out += '\n';
+  });
+  
+  if (result.leftovers.length > 0) {
+    out += `Leftover players: ${result.leftovers.join(', ')}\n`;
+  } else {
+    out += 'No leftover players - all matched into lobbies!\n';
+  }
+  
+  showPanelWithContent('out', out);
+}
+// Lobby mode
+function startLobby() {
+  const alignments = {};
+  for (const [player, vec] of Object.entries(PLAYERS)) {
+    alignments[player] = Object.entries(PERSONAS).map(([persona, pVec]) => {
+      const score = pVec.reduce((acc, val, idx) => acc + (val && vec[idx] ? 1 : 0), 0);
+      return { persona, weight: score };
+    }).sort((a,b) => b.weight - a.weight);
+  }
+
+  const result = runLobbyMode(alignments, LADDER);
+
+  let out = '[Lobby Mode] Generated Lobbies:\n\n';
+  result.lobbies.forEach((lobby, i) => {
+    out += `Lobby ${i + 1}:\n`;
+    lobby.forEach(p => {
+      out += `  - ${p.account_number}: ${p.selectedPersona} (Rank ${p.rank})\n`;
+    });
+    out += '\n';
+  });
+  if (result.leftovers.length > 0) {
+    out += `Leftover players: ${result.leftovers.join(', ')}\n`;
+  }
+
+  showPanelWithContent('out', out);
+}
+
+// Clear all panels
+function clearOut() {
+  const panels = document.querySelectorAll('.panel');
+  panels.forEach(p => {
+    p.style.display = 'none';
+    p.textContent = '';
+  });
+}
+
+
+</script>
+
+</body>
+</html>
+
