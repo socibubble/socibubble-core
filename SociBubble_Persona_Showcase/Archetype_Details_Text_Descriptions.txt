@@ -9,7 +9,7 @@ Core Values
 Logic, Organization, Efficiency
 
 Common Interests
-Technology, architecture, investing, reading, writing, design, programming, journaling, history, woodworking
+Photography, reading, writing, technology, investing, architecture, astronomy, design, history, chess, programming, woodworking, journaling
 
 ===
 
@@ -24,7 +24,7 @@ Core Values
 Discovery, Knowledge, Connection
 
 Common Interests
-Photography, technology, travel, reading, writing, astronomy, podcasts, languages, marine biology, journaling, philosophy, blogging
+Photography, travel, reading, writing, technology, astronomy, philosophy, design, blogging, history, languages, journaling, marine biology
 
 ===
 
@@ -39,7 +39,7 @@ Core Values
 Leadership, Strategy, Results
 
 Common Interests
-Cars, gaming, working out, travel, technology, movies, cycling, investing, podcasts, entrepreneurship, sports, programming
+Cars, gaming, working out, travel, reading, technology, movies, cycling, investing, astronomy, sports, podcasts, programming, entrepreneurship
 
 ===
 
@@ -54,7 +54,7 @@ Core Values
 Innovation, Connection, Variety
 
 Common Interests
-Cars, gaming, travel, technology, movies, dancing, podcasts, programming, volunteering, entrepreneurship, anime, history, skateboarding
+Cars, gaming, travel, hiking, technology, movies, dancing, podcasts, anime, history, programming, volunteering, languages, entrepreneurship
 
 ===
 
@@ -84,7 +84,7 @@ Core Values
 Creativity, Beauty, Expression
 
 Common Interests
-Photography, painting, reading, writing, meditation, mindfulness, music, spirituality, fashion, movies, design, baking, animals, interior design
+Photography, painting, writing, yoga, mindfulness, music, spirituality, fashion, movies, design, baking, blogging, interior design
 
 ===
 
@@ -99,7 +99,7 @@ Core Values
 Empathy, Support, Community
 
 Common Interests
-Photography, cooking, meditation, mindfulness, fashion, dancing, theater, design, baking, animals, volunteering, makeup, journaling, interior design, marine biology
+Photography, cooking, meditation, mindfulness, fashion, dancing, theater, baking, animals, volunteering, makeup, journaling, interior design, marine biology
 
 ===
 
@@ -114,7 +114,7 @@ Core Values
 Fun, Spontaneity, Energy
 
 Common Interests
-Gaming, photography, cooking, travel, music, fashion, movies, dancing, theater, design, baking, anime, skateboarding
+Gaming, photography, cooking, travel, music, fashion, movies, dancing, theater, baking, anime, skateboarding
 
 ===
 
@@ -129,7 +129,7 @@ Core Values
 Craftsmanship, Durability, Function
 
 Common Interests
-Cars, working out, reading, cycling, investing, architecture, gardening, fishing, camping, history, chess, woodworking, DIY projects
+Cars, working out, reading, gardening, cycling, investing, architecture, fishing, camping, crafts, history, chess, woodworking, DIY projects
 
 ===
 
@@ -174,7 +174,7 @@ Core Values
 Collaboration, Hospitality, Unity
 
 Common Interests
-Photography, cooking, fashion, movies, design, baking, crafts, animals, volunteering, makeup, journaling, interior design
+Photography, cooking, fashion, movies, dancing, baking, crafts, animals, volunteering, makeup, journaling, interior design
 
 ===
 
@@ -189,7 +189,7 @@ Core Values
 Freedom, Resourcefulness, Adventure
 
 Common Interests
-Cars, photography, travel, motorcycles, hiking, gardening, fishing, camping, history, chess, woodworking, languages, DIY projects
+Cars, photography, travel, motorcycles, hiking, gardening, fishing, camping, chess, woodworking, languages, DIY projects
 
 ===
 
@@ -204,7 +204,7 @@ Core Values
 Balance, Grace, Flow
 
 Common Interests
-Photography, painting, yoga, meditation, mindfulness, music, spirituality, fashion, movies, running, sports, design, baking, interior design
+Photography, painting, fitness, yoga, meditation, mindfulness, music, spirituality, fashion, movies, running, philosophy, baking, interior design
 
 ===
 
@@ -219,7 +219,7 @@ Core Values
 Courage, Energy, Action
 
 Common Interests
-Cars, gaming, working out, travel, motorcycles, hiking, fitness, fashion, running, camping, sports, philosophy, skateboarding, entrepreneurship
+Cars, gaming, working out, travel, motorcycles, hiking, fitness, fashion, running, cycling, camping, sports, podcasts, skateboarding, entrepreneurship
 
 ===
 
@@ -234,6 +234,6 @@ Core Values
 Expression, Culture, Performance
 
 Common Interests
-Gaming, photography, painting, music, fashion, movies, dancing, theater, design, baking, animals, anime, skateboarding, makeup
+Gaming, photography, painting, music, fashion, movies, dancing, theater, baking, blogging, anime, skateboarding, makeup
 
 ===
